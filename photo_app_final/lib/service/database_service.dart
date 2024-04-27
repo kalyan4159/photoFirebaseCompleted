@@ -22,6 +22,7 @@ void addPhotos(PhotoApp photos) async {
   _photoRef.add(photos);
 }
 
+
 void updatePhoto (String photoId,PhotoApp photo) {
    _photoRef.doc(photoId).update(photo.toJson());
  }
@@ -30,9 +31,27 @@ void deletePhoto(String photoId) {
   _photoRef.doc(photoId).delete();
  }
 
+Future<List<String>> getPhotographerNamesSync() async {
+  List<String> photographerNames = [];
+  QuerySnapshot snapshot = await _photoRef.get();
+  for (var doc in snapshot.docs) {
+    String photographerName = doc.get('photographerName');
+    if (!photographerNames.contains(photographerName)) {
+      photographerNames.add(photographerName);
+    }
+  }
+  return photographerNames;
+}
+
+  Stream<QuerySnapshot> retrievePhotos(){
+    return _photoRef.snapshots();
+  }
+
 void setSortingValue(String sortValue){
   _currentSortValue=sortValue;
 }
+
+
 
 Stream<QuerySnapshot> getSortedPhotos() {
   Query query=_photoRef;
@@ -46,6 +65,15 @@ Stream<QuerySnapshot> getSortedPhotos() {
     case 'favourites':
         query=query.orderBy('isLiked', descending: true);
         break;
+    case 'liked':
+        query=query.where('isLiked', isEqualTo: true);
+        break;
+    case 'unLiked':
+        query=query.where('isLiked', isEqualTo: false);
+        break;
+    case 'customName':
+         query=query.where('photographername');
+         break;
     default:
         query=query;
         break;
@@ -54,3 +82,4 @@ Stream<QuerySnapshot> getSortedPhotos() {
 }
 
 }
+

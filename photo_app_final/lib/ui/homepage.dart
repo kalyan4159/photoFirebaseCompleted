@@ -14,6 +14,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  late List<String> photoNameList;
+  List<Map<String, String>> filteringList = [];
+
   @override
   void dispose() {
    nameController.dispose();
@@ -29,12 +32,17 @@ class _HomePageState extends State<HomePage> {
 
   final  DatabaseService _databaseService=DatabaseService();
    String _selectedSortingCriteria = 'default';
+    
 
   @override
   void initState() {
+    _selectedSortingCriteria = 'default'; 
    _databaseService.setSortingValue(_selectedSortingCriteria);
+   _datafetchingList();
     super.initState();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +66,20 @@ class _HomePageState extends State<HomePage> {
     _selectedSortingCriteria=criteria;
     _databaseService.setSortingValue(criteria);
     setState(() {
-      
     });
   }
-
+void _datafetchingList() async{
+      List<String> nameList =await _databaseService.getPhotographerNamesSync();
+      filteringList.add({'title': 'default', 'criteria': 'default'},);
+      filteringList.add({'title': 'liked', 'criteria': 'liked'},);
+      filteringList.add({'title': 'unLiked', 'criteria': 'unLiked'},);
+       for(String name in nameList) {
+      
+        setState(() {
+          filteringList.add({'title':name,'criteria':'customName'});
+        });
+      }
+    }
   PreferredSizeWidget _appbar(){
     List<Map<String,String>> sortingList=[
       {'title': 'Default', 'criteria': 'default'},
@@ -69,52 +87,96 @@ class _HomePageState extends State<HomePage> {
       {'title': 'Photographer', 'criteria': 'photographerNames'},
       {'title': 'Favorites', 'criteria': 'favourites'},
     ];
+ 
+ 
+  
+    
     return AppBar(
            title: const  Text('Photo Gallery',style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600,color: Colors.white70),),
            actions: [
-           IconButton( icon: const Icon(Icons.filter_list,color: Colors.white70,),onPressed: (){}),
+           IconButton( icon: const Icon(Icons.filter_list,color: Colors.white70,),onPressed: (){
+            
+                showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Stack(
+                      children: <Widget>[
+                        Positioned(
+                          top: 50,
+                           right: 5,
+                           
+                          child: AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: sortingList.map((item) {
+                                return CheckboxListTile(
+                              title: Text(item['title']!),
+                              value: _selectedSortingCriteria == item['criteria'],
+                               onChanged: (value) {
+                                
+                                 setState(() {
+                                  
+                                     _selectedSortingCriteria = item['criteria']!;
+                                    
+                                    _updateSortingMethod(item['criteria']!);
+                                    
+                          
+                                   });
+                                },
+                           );
+                      }).toList(),
+                                   ),
+                                 ),
+                              ),
+                           ],
+                        );
+                  }
+                );
+  },
+); 
+           }),
           IconButton(
           icon: Icon(Icons.filter_list, color: Colors.white70),
           onPressed: () {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return Stack(
-                  children: [
-                    Positioned(
-                      top: 50,
-                       right: 5,
-                      child: AlertDialog(
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: sortingList.map((item) {
-                            return CheckboxListTile(
-                          title: Text(item['title']!),
-                          value: _selectedSortingCriteria == item['criteria'],
-                           onChanged: (value) {
-                             setState(() {
-                              if (value != null && value) {
-                                 _selectedSortingCriteria = item['criteria']!;
-                                _updateSortingMethod(item['criteria']!);
-      }
-    });
-  },
-);
-
-
-                      
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ],
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Stack(
+                      children: [
+                        Positioned(
+                          top: 50,
+                           right: 5,
+                          child: AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: filteringList.map((item) {
+                                return CheckboxListTile(
+                              title: Text(item['title']!),
+                              value: _selectedSortingCriteria == item['criteria'],
+                               onChanged: (value) {
+                                 setState(() {
+                                  if (value != null && value) {
+                                     _selectedSortingCriteria = item['criteria']!;
+                                    _updateSortingMethod(item['criteria']!);
+                          }
+                                   });
+                                },
+                           );
+                      }).toList(),
+                                   ),
+                                 ),
+                              ),
+                           ],
+                        );
+                  }
                 );
-              },
-            );
-          },
-        ),
-           ],
-           backgroundColor: const Color(0xFF4A4C50),
+  },
+);  },), ],
+     backgroundColor: const Color(0xFF4A4C50),
     );
    } 
    Widget _messagesListView() {
