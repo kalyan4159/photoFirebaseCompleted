@@ -10,12 +10,15 @@ class DatabaseService{
 
   late final CollectionReference _photoRef;
   late String _currentSortValue;
+ 
+ 
 
 DatabaseService() {
     _photoRef =_firestore.collection(PHOTO_APP_REF).withConverter<PhotoApp>(
       fromFirestore: ((snapshots, _) => PhotoApp.fromJson(snapshots.data()!) ), 
       toFirestore:  (photos,_)=> photos.toJson() );
       _currentSortValue='default';
+      
 }
 
 void addPhotos(PhotoApp photos) async {
@@ -47,13 +50,15 @@ Future<List<String>> getPhotographerNamesSync() async {
     return _photoRef.snapshots();
   }
 
+
 void setSortingValue(String sortValue){
   _currentSortValue=sortValue;
+
 }
-
-
+ 
 
 Stream<QuerySnapshot> getSortedPhotos() {
+    var ss=_currentSortValue;
   Query query=_photoRef;
   switch(_currentSortValue) {
     case 'timeLatest':
@@ -71,13 +76,18 @@ Stream<QuerySnapshot> getSortedPhotos() {
     case 'unLiked':
         query=query.where('isLiked', isEqualTo: false);
         break;
-    case 'customName':
-         query=query.where('photographername');
+    case 'default':
+         query=query.where('photographerName');
          break;
+    
     default:
-        query=query;
+        query=query.where('photographerName', isEqualTo: ss);
         break;
+      
   }
+
+ 
+ 
   return query.snapshots();
 }
 

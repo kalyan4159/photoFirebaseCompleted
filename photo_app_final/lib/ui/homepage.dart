@@ -47,8 +47,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       resizeToAvoidBottomInset: false,
       appBar:_appbar(),
+      
       body: _messagesListView(),
 
       floatingActionButton: FloatingActionButton(onPressed: (){
@@ -76,10 +78,11 @@ void _datafetchingList() async{
        for(String name in nameList) {
       
         setState(() {
-          filteringList.add({'title':name,'criteria':'customName'});
+          filteringList.add({'title':name,'criteria':name});
         });
       }
     }
+    
   PreferredSizeWidget _appbar(){
     List<Map<String,String>> sortingList=[
       {'title': 'Default', 'criteria': 'default'},
@@ -87,10 +90,7 @@ void _datafetchingList() async{
       {'title': 'Photographer', 'criteria': 'photographerNames'},
       {'title': 'Favorites', 'criteria': 'favourites'},
     ];
- 
- 
-  
-    
+
     return AppBar(
            title: const  Text('Photo Gallery',style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600,color: Colors.white70),),
            actions: [
@@ -106,7 +106,6 @@ void _datafetchingList() async{
                         Positioned(
                           top: 50,
                            right: 5,
-                           
                           child: AlertDialog(
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -115,15 +114,11 @@ void _datafetchingList() async{
                               title: Text(item['title']!),
                               value: _selectedSortingCriteria == item['criteria'],
                                onChanged: (value) {
-                                
                                  setState(() {
-                                  
                                      _selectedSortingCriteria = item['criteria']!;
-                                    
                                     _updateSortingMethod(item['criteria']!);
-                                    
-                          
                                    });
+                                  
                                 },
                            );
                       }).toList(),
@@ -180,7 +175,6 @@ void _datafetchingList() async{
     );
    } 
    Widget _messagesListView() {
-   
         return Padding(
         padding: const EdgeInsets.only(
           top: 10,
@@ -188,30 +182,30 @@ void _datafetchingList() async{
         ),
         child: SizedBox(
         child: StreamBuilder(
-         stream: _databaseService.getSortedPhotos(),
-         builder: (context, snapshot) {
-          List photos = snapshot.data?.docs ?? [];
+        stream: _databaseService.getSortedPhotos(),
+        builder: (context, snapshot) {
+        List photos = snapshot.data?.docs ?? [];
         if (photos.isEmpty) {
         return const Center(
           child: Text('Add a Details'),
-          );
-            }
-            return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-           crossAxisCount: MediaQuery.of(context).size.width > 1000
+        );
+        }
+        return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: MediaQuery.of(context).size.width > 1000
                       ? 5
                       : MediaQuery.of(context).size.width > 800
-                          ? 3
-                          : MediaQuery.of(context).size.width > 500
-                              ? 2
-                              : 1,
+                      ? 3
+                      : MediaQuery.of(context).size.width > 500
+                      ? 2
+                      : 1,
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 5.0,  
         ),
         itemCount: photos.length,
         itemBuilder: (context, index) {
-          PhotoApp photoss = photos[index].data();
-          String photoId = photos[index].id;
+        PhotoApp photoss = photos[index].data();
+        String photoId = photos[index].id;
         return  ClipRRect(
        borderRadius: BorderRadius.circular(10),
        child: Container(
@@ -228,9 +222,9 @@ void _datafetchingList() async{
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+               children: [
                IconButton(onPressed: () { _databaseService.deletePhoto(photoId); },icon: Icon(Icons.delete),),
-              IconButton(onPressed: () {
+               IconButton(onPressed: () {
                   setState(() {
                     PhotoApp updatePhotoApp = photoss.copyWith(isLiked: !photoss.isLiked,);
                     _databaseService.updatePhoto(photoId, updatePhotoApp,);
